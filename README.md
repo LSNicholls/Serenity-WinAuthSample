@@ -21,3 +21,5 @@ To fully-work out these possibilities, the sample app makes some additional chan
 ## Steps ##
 
 The full content of the implementation instructions has been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
+
+To access the full page of instructions, run the app and use the "i" button on the top bar (it has the tooltip "Windows Authentication steps/instructions", just to the left of the "switch language" icon.
