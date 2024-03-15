@@ -1,0 +1,245 @@
+
+@{
+    ViewData["Title"] = "Win Auth Sample Doc";
+    ViewData["PageId"] = "Doc";
+    Layout = MVC.Views.Shared._Layout;
+}
+
+<div>
+
+
+    <style>
+        .docbody {
+            padding:30px;
+            background-color:white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        code {
+            background-color: whitesmoke;
+            color:darkslateblue;
+        }
+
+        .filename {
+            color:seagreen;
+            font-weight:bold;
+        }
+
+        .NB {
+            font-size: smaller;
+            background-color: aliceblue;
+            padding: 10px;
+            margin: 20px;
+        }
+    </style>
+
+    <div class="docbody">
+        <h1>WinAuthSample.Web Sample<span class="NB">Changes in Serenity app to support Windows Authentication</span></h1>
+
+
+        <h2>Overview</h2>
+
+
+
+        <p>
+            This is a sample Serenity project that allows Serenity to recognize Windows
+            identities and also continue to authenticate with its default app identity and password
+            behavior. It is ideal for a Windows intranet setup.
+        </p>
+
+        <p>
+            The primary idea is to allow most users to enter the application without having to
+            authenticate, although administrative users can still use app identities for
+            special purposes.
+        </p>
+
+        <p>
+            The
+            secondary benefit, fully illustrated in this sample, is to allow administrators
+            to identify Windows Network groups that should be mapped to specifical Serenity
+            application Roles, thereby automatically granting Windows-auth users the proper
+            access rights in the application without any extra administrative steps.
+        </p>
+
+        <p>To fully-work out these possibilities, the sample app makes some additional changes
+            implementating some niceties you'll want to consider if you are including Windows authentication in your app.
+        </p>
+
+        <h2>Please note:</h2>
+
+        <p>These instructions have only been tested in Serenity 8 + under AspNetCore v8. The WindowsGroup-related functionality will work in earlier versions, but some of the code  related to System.Security and WindowsIdentity probably will not. <br />The sample code may contain Newtonsoft.Json references, as it was started before&nbsp;<a href="https://github.com/serenity-is/Serenity/issues/7021">Transitioning to System.Text.Json from Newtonsoft.Json in 8.0.1</a>, and the contributed WindowsGroup, WindowsGroupRoles, and MyProfile modules may contain even older syntax, since they were developed in Serenity 6. But nothing in them prevents them from being used or revised in 8.0.1 and later versions.</p>
+        <p>It should also work in both Free and Premium Serenity versions; the method was originally developed under Premium (StartSharp) but this sample is built from Serenity and has the same functionality.</p>
+        <p class="NB">Please especially note that you, as an expert Serenity developer, may have better ways to write much of the code here.  I hope you let me know!  Besides, Serenity is always improving, so details of implementation are likely to change. But I think that the general method and ideas about the requirements to be met for a Windows Authentication  environment, however imperfectly implemented here, will remain valid.</p>
+
+        <h2>Steps</h2>
+        This list should be a complete log of what I did on the sample project (possibly still a WIP).
+
+        <ol>
+            <li>
+                Adjust your project's Target OS to Windows. Otherwise, this whole effort doesn't make a lot of sense. 😉 You could leave it as-is, targeting any platform, but you will get some warnings on code that introduces WindowsIdentity-specific behavior and references, as "not reachable in all platforms". 
+            </li>
+            <li>
+                In the appsettings.json file, adjust the <span class="filename">WinAuthSettings:DomainConnected</span> key value to suit your needs.  This might be false in your development environment and would typically be true in production.  The method works in both environments, but slightly differently. 
+            </li>
+            <li>
+                Run <span class="filename">WindowsUserSetupBehavior.sql</span> in your Serenity system aka Default database, after adjusting the topmost section for any custom fields you want in the User row. In the example sql and additional code artifacts, this is FormInitials.
+                <div class="NB"> If you are not using FormInitials, you will need to remove some related code in the p_SetupWindowsNetworkUser method. This code and related code throughout the sample exist to show you places you might adjust for custom User attributes in your application(s). The method also has comments about adjustments to the method parameters you might make in your version. You will also notice a stub method it calls, p_SetupAppSpecializedWindowsUserBehavior, which is blank in the sample, but able to accommodate per-application needs. For example, a user in a certain role might need some other business rules applied. You could also move code handling customized User row attributes here if they aren't standard across applications.</div>
+            </li>
+            <li>In <span class="filename">Startup.cs</span>, you'll need a new service for ImpersonatingUserAccessor.  You'll find it at the end of the ConfigureServices method. <br />
+                This is the only definitely-required change in the file, but there are a bunch of additional adjustments suggested in <span class="filename">Startup.cs</span> (search for "winauth" in the comments). Some combination of these changes may work to avoid the error <code>The provided antiforgery token was meant for a different claims-based user than the current user.</code> These were all suggested by various people when using multiple authentication schemes, to avoid this error as well as to make multiple authentication schemes work when one was Windows -- none of them worked terribly well for me. In the end I found ways to handle all the other problems outside Startup.cs but I did comment out <code>options.Filters.Add(typeof(AutoValidateAntiforgeryIgnoreBearerAttribute));</code> leaving only  <code>options.Filters.Add(typeof(AntiforgeryCookieResultFilterAttribute));</code> in the version shown in this sample. You may find you don't need to do this, but it seems like a safe thing to do on an intranet app that cannot be accessed from rogue apps in the external world anyway.
+                 <br/>In <span class="filename">Startup.cs</span>, I've also removed the Migrations service and its initialization lines; in your version of the file, if your database strategy calls for it, feel free to include these lines or as I do remove them after creating the default database the first time I run a new project from a Serenity template.  The <span class="filename">WindowsUserSetupBehavior.sql</span> file included in this project include all the post-Serenity-initialization database code you'll need for the sample.</li>
+            <li>
+                Adjust <span class="filename">UserRetrieveService.cs:</span>
+                <ol>
+                    <li>Reference additional libraries as shown in the sample,</li>
+                    <li>
+                        Add the RefreshCurrentUserRolesByNetworkGroup and AdminRefreshUser methods as shown as well as the GetUserInitials method called by RefreshCurrentUserRolesByNetworkGroup.
+                        <div class="NB">Again, adjust the method parameters and behavior for your custom needs, matching whatever you did in the p_SetupWindowsNetworkUser method earlier. If you're not using FormInitials, for example, you wouldn't need GetUserInitials or the matching parameter either.</div>
+                    </li>
+                    <li>
+                        Adjust the GetFirst method as shown in the sample:
+                        <ol>
+                            <li>After getting the User initially, if the user is null, there is a second block of code calling the RefreshCurrentUserRolesByNetworkGroup method. The method will gather a set of network groups for the user, if the current user is a Windows Identity, and then call the p_SetupWindowsNetworkUser stored procedure. This method automatically creates the user row if it needs to, and then sets up the user's application roles.</li>
+                            <li>Add anything into the existing creation of the UserDefinition return value to match whatever you added to the UserDefinition earlier, if/as needed.</li>
+
+                        </ol>
+                    </li>
+                    <li>Adjust RemovedCachedUser to remove additional items from the cache as shown in the sample. Consider adjusting the RemoveCachedUser method to handle any additional user-specific cache items that might come up in your application, whether attached to user name or to user id.</li>
+                </ol>
+
+            </li>
+            <li>
+                Adjust <span class="filename">UserAccessor.cs</span> as shown in the sample:
+                <ol>
+                    <li>Make SqlConnections accessible, and add a "MyRow" and Fld following typical Serenity practice.</li>
+                    <li>
+                        Change the User instance of ClaimsPrincipal from <code>ClaimsPrincipal User ⇒ impersonator.User ;</code> to use a new GetUser method that adds a NameIdentifier claim to the principal if not already there. The GetUser method, as shown in the sample, will be using the p_SetupWindowsNetworkUser method if necessary to create the user on the first usage of UserAccessor. The same approach is also leveraged in UserRetrieveService, below.
+                    </li>
+                </ol>
+            </li>
+            <li>Add any custom fields to <span class="filename">UserRow.cs</span> that you are going to need for your app and have supplied in the SQL. In the example, again, this would be FormInitials.</li>
+
+            <li>Adjust <span class="filename">UserDefinition.cs</span> and <span class="filename">ScriptUserDefinition.cs</span> with any custom attributes you wish to expose. In the example, we've added IsDomainUser to UserDefinition and used that value but you could also derive it directly in UserRetrieveService or other places.</li>
+
+         
+            <li>
+                Adjust <span class="filename">
+                    UserPasswordValidator.cs</span> (search for winauth in the comment) :
+                <ol>
+                    <li>Change the Validate method as shown in the sample. The basic idea here is to exempt Windows auth identities from validation of password. The changes to UserRetrieveService will ensure that these users are automatically being created, as discussed earlier.</li>
+                    <li>Change the ValidateExistingUser method as shown in the sample. Here, we want to check for inactive as normal for app identities but then exempt Windows Auth users from the rest of the password code.</li>
+                    <li>Change ValidateFirstTimeUser by adding a block at the top that ensures that a domain user gets out clean here, too. This shouldn't be needed (the user should never be null if domain user and therefore we should never be in this block) but it doesn't do any harm because the called method will return false immediately if it is not a domain user and, if it is ever reached for a domain user, would just refresh network groups a second time.</li>
+
+                </ol>
+
+            </li>
+
+            <li>At this point you should still be able to run the application and sign in as admin, nothing will seem to have changed.  Verify this before continuing, and fix any errors.
+                <div class="NB">In the sample <span class="filename">LoginRequest.cs</span>, I've changed the placeholder values to remind you that the admin sign-on is the same as it is in the public Serenity demo app.</div>
+
+            </li>
+
+            <li>Set up under IIS or IISExpress for Windows authentication, disabling anonymous authentication. (If you are doing this in Visual Studio, this will addjust your <span class="filename">web.config</span> and <span class="filename">launchSettings.json</span> files.  Now, if you run the application under the IIS Express configuration, it should still work, but you should not be asked to sign in. Check the Profile flyout or dropdown menu -- if your identity is still admin because your credentials have been cached earlier, use the Logout link. You should still see the Dashboard, but you should lose the Administrative features in the menu or (if StartSharp) in the sidebar, and, if you check the Profile menu, you should see your Windows identity instead of admin.</li>
+            <li>
+                Adjust the Signout method in <span class="filename">AccountPage.cs</span> as shown in the sample. This is to make sure you can still get back to the login page and log in as an app identity when you want to. (Notice that it also adjusts the SignOutAsync call, and adds cache removal.  This code may very well be imperfect; consider what you think is needed, and do it here.)<br/>If you just make the change to the Signout method, you will always go to the login page, which you shouldn't have to do for Win Auth users. So we'll also adjust <span class="filename">_Sidebar.cshtml</span> at this point, in the section bracked by a check for <code>if (User.IsLoggedIn())</code>, a condition that will probably always be true in this Windows auth app:
+                <ol>
+                    <li>Surround the entry that allows the user to change their password with a condition:<code> if (! User.Identity.Name.Contains('\'))</code>, since password changing shouldn't be used by windows auth users, only app users.</li>
+                    <li>Adjust the Navigation class in <span class="filename">Texts.cs</span> so that you have a LogoutLink and a LogoutLinkAppUser value, with texts that distinguish between the two actions.</li>
+                    <li>Make use of both texts for two separate links in the Profile menu, as shown in the sample. Notice that the first one adds the winauth value to the query string as shown in the code you changed to the AccountPage Signout method.</li>
+                    <li>Now the Profile menu lets the user log in as their Windows identity or choose to go to the login screen. You can toggle back and forth.
+                        <div class="NB">If you aren't seeing the behavior you expect, check the notes in <span class="filename">Startup.cs</span>, or above in these instructions about commenting out <code>options.Filters.Add(typeof(AutoValidateAntiforgeryIgnoreBearerAttribute));</code>. </div>
+
+                    </li>
+                </ol>
+
+            </li>
+            <li>Administrators will need to be able to assign application role privileges to Windows domain groups. Add <span class="filename">WindowsGroup</span> and <span class="filename">WindowsGroupRoles</span> modules for this purpose. As provided in the sample, these are in the Administration module.
+                <ol>
+                    <li>You can paste them in from the sample under Administration, fixing the namespaces.</li>
+                    <li>You'll need to make them accessible by adjusting the <span class="filename">AdministrationNavigation.cs</span> and <span class="filename">NavigationItems.cs</span> as shown in the sample as well.</li>
+                    <li>Once this is done, test how they work with your Windows identity:</li>
+                    <ol>
+                        <li>Sign in as admin, since your windows auth role doesn't have rights to Administrative functionality (yet).</li>
+                        <li>Create a new Test role, and assign it some (but not all) Administration permissions. In the sample, the Test role gets  User, Role Management and Permissions, but not Languages.</li>
+                        <li>Configure a Windows Group to be associated with the Test role. It should be a Windows group of which you are a member in your dev environment. In the sample code, I've used Everyone.
+                            (You can remove it or remove its association with the Test role, for additional tests.)
+                        </li>
+                        <li>When you re-login with your Windows identity, you might not see the changes right away. This would be a cookies/session thing, although we've tried to guard against that in the SignOut method. If you deleted your Windows identity user and then re-logged on, it would "come right", but that isn't very satisfactory and certainly isn't going to be possible without an admin user getting involved. By deleting the user, you might lose custom-configured information for this user identity that you wanted to keep. We have not yet added a way for users to explicitly refresh their privileges, nor for cached information about a user to be removed by administrator. We'll do that next.</li>
+                    </ol>
+
+                </ol>
+
+
+            </li>
+            <li>Add the <span class="filename">AuthUtils.ts</span> and <span class="filename">AuthUtilsEndpoint.cs</span> files to your <span class="filename">User\Authentication</span> module, fixing the namespace. There are some additional points made in the comments in each file; please review them. For the purpose of what we're accomplishing here, these files expose functionality in UserRetrieveService (RemoveCachedUser, RefreshCurrentUserRolesByNetworkGroup, and AdminRefreshUser) to script.</li>
+            <li>First we'll allow the user to handle this chore for themselves, and only for themselves. We'll also expose some limited contents from their own User row which they can change at their convenience.<ol>
+            <li>Add the <span class="filename">MyProfile module</span> from the sample, and fix the namespaces. You'll see that this module holds a limited set of the contents of the UserRow. Note also the filters on the List and Retrieve actions to limit the user from seeing any other row but their own, no matter what they might type in the address bar.</li>
+
+            <li>Add one more entry on the <span class="filename">_Sidebar.cshtml</span> Profile menu, as shown in the sample above the "change password" entry, to allow the user access to the new module.</li>
+            <li>Try it out.  You'll find that the form has a "Refresh" button you can hit that will handle the chore of re-setting your Roles according to your Windows identity, if you are logged on using windows auth.  It will also refresh the contents of your user cache. If you are logged in as admin or a different app identity, this function will still refresh your user cache but it will not change your Roles (since all rows for app identities are managed in the Serenity app, not by Windows groups).
+                <div class="NB">The same code is included as a button on rows in the MyProfile Grid, just for grins, although you'll not see it unless you type in the MyProfile address without an #edit part.  Since the MyProfile Grid only ever contains one row, it's really not needed. </div>
+
+            </li>
+            <li>The Refresh code you've added into the <span class="filename">MyProfile</span> module sets a special User Preference flag value to indicate that Dashboard updating might be needed for new user status. We should add some code into the Dashboard that removes it again -- presumably after noting the flag and re-caching or updating whatever is appropriate. We'll do that in the last step, because there will be some other code we'll be adding into Dashboard to illustrate awareness of user status.
+                <div class="NB">There is nothing really WinAuth-specific about this cache refreshing mechanism.  You might not like it or need it.</div></li>
+                </ol>
+            </li>
+            <li>
+                Before adapting the Dashboard, we'll next add an administrative facility to refresh other users. You can choose to expose the capability in the User Grid, the User Dialog; the sample has both.
+                <ol>
+                    <li>First reference/import AdminRefreshUser in the <span class="filename">UserGrid.ts</span> and/or <span class="filename">UserDialog.ts</span> files, as shown in the sample. Also reference the confirmDialog function, because the Admin user is going to choose whether or not to remove Roles that are not associated with Windows groups for the user, if it is a Windows auth user, when using this feature. (You could choose to change this behavior so that it always happens or always doesn't happen, or you could make it a global application setting, but in the sample the admin is allowed to decide this on a case-by-case basis.)</li>
+                    <li>In <span class="filename">UserGrid.ts</span>, you'll need to adjust the existing getColumns method, as shown, and also add the new onClick and refreshUserData methods provided in the sample.</li>
+                    <li>In <span class="filename">UserDialog.ts</span>, adjust the existing getToolbarButtons method as shown, and add a new RefreshUserData method. While you're add it, you can also adjust the dialog to be more appropriate to Windows auth; adjust the afterLoadEntity method for this.</li>
+                    <li>In <span class="filename">UserForm.cs</span>, I've also moved Activated to the top in the sample. This is because it will have more significant meaning when you're allowing users to be created automatically. Your version of the SQL code in p_SetupWindowsNetworkUser or the specialized-by-application procedure that it calls might, for example, disable all newly-created users if there are no Windows groups supplied in the call that match ones known by the application. Maybe, in a particular app, you won't want them seeing even the Dashboard contents. You'll see how the application copes with Inactive users being allowed to see the UI, which isn't allowed to app identities (they won't make it through the login page), in the next step.</li>
+                    <li> When you try this out, if you see no users in the Users grid when signed in as your Windows identity,  reference the notes in <span class="filename">Startup.cs</span>, or above in these instructions about commenting out <code>options.Filters.Add(typeof(AutoValidateAntiforgeryIgnoreBearerAttribute));</code>. It will work. Whether it should be needed, I'm still not sure.</li>
+
+
+                </ol>
+
+            </li>
+
+            <li>
+                Unlike the original behavior, the app now allows Windows auth users to see the home page, which means the Dashboard and the menu, even if they are inactive. So, we'll want to adjust the Dashboard and menu. As mentioned earlier, we'll also add some code to be aware of the special "Dashboard Refresh" flag value that we added as a UserPreference item, presumably respond to it as needed, and then clear it. (I've done the preference handling with raw sql, there is probably a better way but it doesn't really matter that much since the important thing is to realize that you should do something.)
+                <ol>
+                    <li>I've added a DashboardUserModel to the <span class="filename">DashboardPageModel.cs</span> file, and exposed it as a member of the DashboardPageModel class. All this really depends on what your Dashboard actually does, but in this case I want to show that the Dashboard can see, and respond, to the user's display name and also their active/inactive state, which I consider a minimal requirement for Windows authentication-enabled Serenity apps. I also changed the precision of ClosedOrderPercent in the DashboardPageModel class to fit better with my simple demo numbers as created in  <span class="filename">DashboardPage.cs</span>.</li>
+                    <li>
+                        In <span class="filename">DashboardPage.cs</span>:
+                        <ol>
+                            <li>For illustrative purposes, I've added a cached model for the non-user-centric dashboard model data, since this sample project doesn't have Northwind. Just assume this part is whatever real stuff you have going on, from your real data, on your dashboard.</li>
+                            <li>I check to see whether the Dashboard needs a refresh, by looking at the UserPreference that our MyProfile and Administration User additions have set. Presumably if the Dashboard needs a refresh, you'll do some additional work in here, which I've left a place for, but again this really depends on your Dashboard contents. Remember that this particular code is user specific so whatever you're refreshing here it is likely to be a list of user-specific tasks, not something that is application-wide. In the current example, I don't cache the Dashboard User data at all, because it is very lightweight, but it would be likely to have its own separate cache item, "DashboardUserModel", with a different refresh period from "DashboardPageModel", in real life.</li>
+                            <li>I've added some code that puts user-centric attributes together for the DashboardUserModel, and fill them out, attaching them to the DashboardModel. For sample purposes, this includes debug information showing Windows identities and associated groups for the Windows user, as "understood" by this application.</li>
+
+                        </ol>
+                        With these changes done, we're ready to change what's available in the UI.
+                    </li>
+                    <li>
+                        In <span class="filename">
+                            DashboardIndex.cshtml</span>:
+                        <ol>
+                            <li>I've added a section at the top, greeting the current user by display name, as part of ContentHeader. This section would include information that even inactive or permission-less people would see.</li>
+                            <li>The rest of the page is branched based on <code>User.IsActive</code>, with inactive users not seeing any of the data content, just a message.</li>
+                            <li>Realize that, in reality, with a more interesting DashboardUserModel, there might be sections only shown to people with extensive permissions while other sections are shown to everybody. The Dashboard might also contain links, courtesy of the DashboardUserModel, that are personalized based on user preferences or current activities. <div class="NB">Again: while most of this behavior has nothing to do with Win Auth, the fact that even inactive users can see the Dashboard or Home page when you are automatically letting any user on the intranet into the application, via Windows auth, is a strong reason to consider at least the simple branching between Active and Inactive users as part of your basic application design.</div></li>
+
+                        </ol>
+
+                    </li>
+                    <li>Finally, in <span class="filename">PermissionService.cs</span>, reference the "winauth" comments in the file, and make these changes:
+                        <ol>
+                            <li>Make UserRetrieveService accessible</li>
+                            <li>Put in a test (after <code>if (!isLoggedIn)</code>, because this is extra work, and also because if Permission is "?" even inactive  users can see whatever-it-is), for the user's active/inactive state.</li>
+                 
+                        </ol>
+                       
+                    </li>
+
+                </ol>
+
+            </li>
+        </ol>
+
+
+
+
+    </div>
+    
+</div>

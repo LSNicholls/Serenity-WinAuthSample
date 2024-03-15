@@ -1,0 +1,26 @@
+@using Serenity
+@using Serenity.Web
+ 
+@using WinAuthSample.Membership
+@using Microsoft.AspNetCore.Html
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+ 
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+@section Head {
+}
+
+@section ContentHeader {
+    <h1>@ViewData["Title"]<small></small></h1>
+}
+ 
+
+<script type="text/javascript">
+    jQuery(function () {
+        var dlg = new WinAuthSample.Membership.MyProfileDialog();
+        dlg.dialogOpen(true);
+    });
+</script>
