@@ -20,7 +20,7 @@ To fully-work out these possibilities, the sample app makes some additional chan
 
 ## Steps ##
 
-The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path.
+The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path.  If sqlcmd is *not* in your path, you'll get an error the first time but the DB will still be created.  You can then run [the required sql file](./WindowsUserSetupBehavior.sql) manually against the DB to set up the additional SQL artifacts for this sample app.
 
 The full contents of the implementation instructions, for your own apps, have been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
 
