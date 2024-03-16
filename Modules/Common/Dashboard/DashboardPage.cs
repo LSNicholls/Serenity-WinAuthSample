@@ -21,8 +21,7 @@ public class DashboardPage : Controller
     public ActionResult Index([FromServices] ITwoLevelCache cache,
                               [FromServices] ISqlConnections sqlConnections,
                               [FromServices] IUserRetrieveService userRetriever,
-                              [FromServices] IUserAccessor userAccessor,
-                              [FromServices] IConfiguration config)
+                              [FromServices] IUserAccessor userAccessor)
     {
 
         ArgumentNullException.ThrowIfNull(cache);
@@ -31,8 +30,32 @@ public class DashboardPage : Controller
 
         var o = MyRow.Fields;
         var u = userRetriever.ByUsername(User.Identity.Name);
-        bool onDomain = (bool)config.GetValue(typeof(bool), "WinAuthSettings:DomainConnected");
+        //  bool onDomain = (bool)config.GetValue(typeof(bool), "WinAuthSettings:DomainConnected");
         // we'll check to see if we need to refresh user information now.
+
+        //  the non-user-specific info for the dashboard:
+
+        // theoretically you have real work going on here, which is not user-specific.
+        // I'm just adding a  hokey example to illustrate that because I don't have 
+        // Northwind db in this sample app:
+        var cachedModel = cache.GetLocalStoreOnly("DashboardPageModel", TimeSpan.FromMinutes(300),
+           o.GenerationKey, () =>
+           {
+               var model = new DashboardPageModel();
+               using (var connection = sqlConnections.NewFor<MyRow>())
+               {
+                   model.OpenOrders = (int)connection.ExecuteScalar("select min(UserId) as MinId from Users");
+                   var closedOrders = (int)connection.ExecuteScalar("select max(UserId) as MaxId from Users");
+                   var totalOrders = model.OpenOrders + closedOrders;
+                   model.ClosedOrderPercent = (double)Math.Round(totalOrders == 0 ? 100 :
+                       ((double)closedOrders / totalOrders * 100), 2);
+                   model.CustomerCount = 58;
+                   model.ProductCount = 22;
+               }
+               model.IsDomainConnected = AppServices.AuthUtils.IsDomainConnected();
+               return model;
+           });
+
 
         using var connection = sqlConnections.NewFor<UserPreferenceRow>();
         var cmd = connection.CreateCommand();
@@ -85,7 +108,7 @@ public class DashboardPage : Controller
                                "<br/>User Accessor.User.Identity: " + userAccessor.User.Identity.Name +
                                "<br/>new WindowsIdentity used in code if on domain: " + ((u.Username.Contains('\\')) ?
                                parts[1] + '@' + parts[0] : "(none)") ) +
-                               "<br/>On Domain: " + onDomain.ToString() + 
+                               "<br/>On Domain: " + cachedModel.IsDomainConnected.ToString() + 
                               "</h6>"
         };
           
@@ -95,7 +118,7 @@ public class DashboardPage : Controller
             // WindowsIdentity currIdentity =  (WindowsIdentity) userAccessor.User.Identity;
             
             // WindowsIdentity     currIdentity = new WindowsIdentity("linich@Eden") ;
-            WindowsIdentity currIdentity = (onDomain ?  new WindowsIdentity(parts[1] + '@' + parts[0]) : (WindowsIdentity)userAccessor.User.Identity);
+            WindowsIdentity currIdentity = (cachedModel.IsDomainConnected ?  new WindowsIdentity(parts[1] + '@' + parts[0]) : (WindowsIdentity)userAccessor.User.Identity);
 
             foreach (var groupId in currIdentity.Groups)
         {
@@ -128,33 +151,10 @@ public class DashboardPage : Controller
             uAttr.UserDebugInfo += groups.ToString();
         }
 
-        // now back to the non-user-specific info for the dashboard:
-
-        // theoretically you have real work going on here, which is not user-specific.
-        // I'm just adding a  hokey example to illustrate that because I don't have 
-        // Northwind db in this sample app:
-        var cachedModel = cache.GetLocalStoreOnly("DashboardPageModel", TimeSpan.FromMinutes(30),
-           o.GenerationKey, () =>
-           {
-               var model = new DashboardPageModel();
-               using (var connection = sqlConnections.NewFor<MyRow>())
-               {
-                   model.OpenOrders = (int)connection.ExecuteScalar("select min(UserId) as MinId from Users");
-                   var closedOrders = (int)connection.ExecuteScalar("select max(UserId) as MaxId from Users");
-                   var totalOrders = model.OpenOrders + closedOrders;
-                   model.ClosedOrderPercent = (double) Math.Round(totalOrders == 0 ? 100 :
-                       ((double) closedOrders / totalOrders * 100), 2);
-                   model.CustomerCount = 58;
-                   model.ProductCount = 22;
-               }
-               return model;
-           });
-
-
 
 
         cachedModel.User = uAttr;
-        cachedModel.IsDomainConnected = onDomain;
+        
 
         return View(MVC.Views.Common.Dashboard.DashboardIndex, cachedModel);
     }

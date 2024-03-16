@@ -64,8 +64,7 @@
         <p>To fully-work out these possibilities, the sample app makes some additional changes
             implementating some niceties you'll want to consider if you are including Windows authentication in your app.
         </p>
-        <p>The sample application should build and run from Visual Studio exactly as is, showing the Win Auth features, assuming sqlcmd is in your path, <b>except</b> that you should change WinAuthSettings:DomainConnected setting to true if your development computer is joined to a domain.  If sqlcmd is not in your path, you'll get an error the first time you run but the DB will be created according to standard Serenity system requirements.
-            You can run the file <span class="filename">WindowsUserSetupBehavior.sql</span> manually against your new DB, after that.
+        <p>The sample application should build and run from Visual Studio exactly as is, showing the Win Auth features, assuming sqlcmd is in your path.  If sqlcmd is not in your path, you'll get an error the first time you run but the DB will be created according to standard Serenity system requirements. You can run the file <span class="filename">WindowsUserSetupBehavior.sql</span> manually against your new DB, after that.
         </p>
 
         <h2>Please note:</h2>
@@ -80,9 +79,6 @@
         <ol>
             <li>
                 Adjust your project's Target OS to Windows. Otherwise, this whole effort doesn't make a lot of sense. 😉 You could leave it as-is, targeting any platform, but you will get some warnings on code that introduces WindowsIdentity-specific behavior and references, as "not reachable in all platforms". 
-            </li>
-            <li>
-                In the appsettings.json file, adjust the <span class="filename">WinAuthSettings:DomainConnected</span> key value to suit your needs.  This might be false in your development environment and would typically be true in production.  The method works in both environments, but slightly differently. 
             </li>
             <li>
                 Run <span class="filename">WindowsUserSetupBehavior.sql</span>, or some variant of it, in your Serenity system aka Default database, after adjusting the topmost section for any custom fields you want in the User row. In the example sql and additional code artifacts, this is FormInitials.
@@ -175,7 +171,7 @@
 
 
             </li>
-            <li>Add the <span class="filename">AuthUtils.ts</span> and <span class="filename">AuthUtilsEndpoint.cs</span> files to your <span class="filename">User\Authentication</span> module, fixing the namespace. There are some additional points made in the comments in each file; please review them. For the purpose of what we're accomplishing here, these files expose functionality in UserRetrieveService (RemoveCachedUser, RefreshCurrentUserRolesByNetworkGroup, and AdminRefreshUser) to script.</li>
+            <li>Add the <span class="filename">AuthUtils.cs</span>, <span class="filename">AuthUtils.ts</span> and <span class="filename">AuthUtilsEndpoint.cs</span> files to your <span class="filename">User\Authentication</span> module, fixing the namespace. There are some additional points made in the comments in each file; please review them. For the purpose of what we're accomplishing here, the first file exposes a method to know if the server can contact a domain or not; the method works both ways but slightly differently.  The other two files expose functionality in UserRetrieveService (RemoveCachedUser, RefreshCurrentUserRolesByNetworkGroup, and AdminRefreshUser) to script.</li>
             <li>First we'll allow the user to handle this chore for themselves, and only for themselves. We'll also expose some limited contents from their own User row which they can change at their convenience.<ol>
             <li>Add the <span class="filename">MyProfile module</span> from the sample, and fix the namespaces. You'll see that this module holds a limited set of the contents of the UserRow. Note also the filters on the List and Retrieve actions to limit the user from seeing any other row but their own, no matter what they might type in the address bar.</li>
 

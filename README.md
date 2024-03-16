@@ -20,7 +20,7 @@ To fully-work out these possibilities, the sample app makes some additional chan
 
 ## Steps ##
 
-The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path, except that you may have to change the WinAuthSettings:DomainConnected setting to true if your development computer is joined to a domain.
+The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path.
 
 The full contents of the implementation instructions, for your own apps, have been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
 

@@ -5,22 +5,21 @@ using Microsoft.AspNetCore.Http;
 using MyRow = WinAuthSample.Administration.UserRow;
 using Microsoft.Win32.SafeHandles;
 using NUglify.Helpers;
-using Microsoft.Extensions.Configuration;
+
 using Serenity.Abstractions;
- 
- 
+using NUglify.JavaScript.Syntax;
+
+
 
 namespace WinAuthSample.AppServices;
 
-public class UserRetrieveService(ITwoLevelCache cache, ISqlConnections sqlConnections,
-[FromServices] IConfiguration config) : IUserRetrieveService
+public class UserRetrieveService(ITwoLevelCache cache, ISqlConnections sqlConnections) : IUserRetrieveService
 {
     private static MyRow.RowFields Fld { get { return MyRow.Fields; } }
 
     protected ITwoLevelCache Cache { get; } = cache;
     protected ISqlConnections SqlConnections { get; } = sqlConnections;
-
-    protected IConfiguration Configuration { get; } = config; 
+    protected static bool DomainConnected { get; } = AppServices.AuthUtils.IsDomainConnected(); 
       
 
     // winauth method changes
@@ -118,7 +117,7 @@ public class UserRetrieveService(ITwoLevelCache cache, ISqlConnections sqlConnec
     // winauth new methods start here:
 
     public static bool AdminRefreshUser(ITwoLevelCache cache, IUserAccessor adminUser, int? userId, string username, 
-         IDbConnection connection, IConfiguration config, bool RemoveOtherRoles = false )
+         IDbConnection connection, bool RemoveOtherRoles = false) // IConfiguration config,
     {
         bool retval = true;
         RemoveCachedUser(cache, userId, username);
@@ -127,9 +126,10 @@ public class UserRetrieveService(ITwoLevelCache cache, ISqlConnections sqlConnec
         {
            
             var parts = username.Split('\\');
-            bool onDomain = (bool)config.GetValue(typeof(bool), "WinAuthSettings:DomainConnected");
+            //bool onDomain = (bool)config.GetValue(typeof(bool), "WinAuthSettings:DomainConnected");
+            
             var impersonator = (IImpersonator)adminUser;
-            var identw = (onDomain ? new WindowsIdentity(parts[1] + '@' + parts[0]) :
+            var identw = ( DomainConnected ? new WindowsIdentity(parts[1] + '@' + parts[0]) :
                   WindowsIdentity.GetCurrent());
             identw.AddClaim(new Claim("NameIdentifier", userId.ToString()));
             impersonator.Impersonate(new ClaimsPrincipal(identw));

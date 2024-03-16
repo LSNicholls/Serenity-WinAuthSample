@@ -48,7 +48,7 @@ namespace WinAuthSample.AppServices
 
         [HttpPost]
         [ServiceAuthorize("?")] // see note in the section action below about this attribute.
-        public ActionResult AdminRefreshUser(int? UserId, string UserName, bool RemoveOtherRoles, [FromServices] ISqlConnections sqlConnections, [FromServices] IUserAccessor userAccessor,  [FromServices] IConfiguration config)
+        public ActionResult AdminRefreshUser(int? UserId, string UserName, bool RemoveOtherRoles, [FromServices] ISqlConnections sqlConnections, [FromServices] IUserAccessor userAccessor) //,  [FromServices] IConfiguration config
         {
 
             var retval = "ok";
@@ -60,7 +60,7 @@ namespace WinAuthSample.AppServices
                 // that are not explicitly set by Windows Group.
                 var conn = sqlConnections.NewFor<MyRow>();
 
-                UserRetrieveService.AdminRefreshUser(Cache, userAccessor, UserId, UserName,  conn,  config, RemoveOtherRoles);
+                UserRetrieveService.AdminRefreshUser(Cache, userAccessor, UserId, UserName,  conn,  RemoveOtherRoles); //config,
 
                 RequestDashboardRefresh(UserId, conn);
 
