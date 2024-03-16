@@ -9,6 +9,8 @@
   <ItemGroup>
     <TypeScriptCompile Remove="node_modules\**" />
     <EmbeddedResource Include="Migrations\**\*.sql" />
+    <None Remove="App_Data\WinAuthSample_Default.ldf" />
+    <None Remove="App_Data\WinAuthSample_Default.mdf" />
     <Content Update=".eslintrc.json;libman.json;package.json;package-lock.json;sergen.json;tsconfig.json;tslint.json;Modules\tsconfig.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
     <Using Include="Microsoft.AspNetCore.Mvc;Microsoft.Extensions.Options;System;System.Collections.Generic;System.ComponentModel;System.Linq;System.Text;System.Threading" />
     <Using Include="Serenity;Serenity.Abstractions;Serenity.ComponentModel;Serenity.Data;Serenity.Data.Mapping;Serenity.Extensions;Serenity.Services;Serenity.Web" />
@@ -33,6 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Modules\Membership\MyProfile\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="WindowsUserSetupBehavior.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Target Name="NpmInstall" BeforeTargets="BeforeBuild" Condition="!Exists('node_modules\@types\jquery\index.d.ts')">
     <Message Text="Installing NPM packages..." Importance="high" />

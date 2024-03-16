@@ -20,6 +20,8 @@ To fully-work out these possibilities, the sample app makes some additional chan
 
 ## Steps ##
 
-The full content of the implementation instructions has been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
+The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path, except that you may have to change the WinAuthSettings:DomainConnected setting to true if your development computer is joined to a domain.
+
+The full contents of the implementation instructions, for your own apps, have been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
 
 To access the full page of instructions, run the app and use the "i" button on the top bar (it has the tooltip "Windows Authentication steps/instructions", just to the left of the "switch language" icon.

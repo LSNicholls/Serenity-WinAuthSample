@@ -249,6 +249,37 @@ create or alter   view [dbo].[v_PermissionsByUser] as
 
 GO
 
+-- this part is strictly for the sample app.  Normally you would
+-- configure Roles for Serenity as you normally do, and
+-- bind Windows groups to them using the UI:
 
+declare @RoleId as int, @WindowsGroupId as int ;
+select @RoleId =  RoleId from dbo.Roles where RoleName = 'Test';
+if @RoleId is null 
+begin
+   insert into dbo.Roles (RoleName) select 'Test' ;
+   select @RoleId =  RoleId from dbo.Roles where RoleName = 'Test';
+end
+
+select @WindowsGroupId = Id from dbo.WindowsGroup where GroupName = 'Everyone';
+if @WindowsGroupId is null
+begin
+   insert into dbo.WindowsGroup (GroupName) select 'Everyone' ;
+   select @WindowsGroupId = Id from dbo.WindowsGroup where GroupName = 'Everyone';
+end
+
+if @WindowsGroupId is not null and @RoleId is not null and not exists
+(select 1 from dbo.WindowsGroupRoles where RoleId = @RoleId and WindowsGroupId = @WindowsGroupId)
+begin
+   insert into dbo.WindowsGroupRoles (WindowsGroupId, RoleId) select @WindowsGroupId, @RoleId ;
+end
+
+if @RoleId is not null and not exists
+(select 1 from dbo.RolePermissions where RoleId = @RoleId and PermissionKey = 'Administration:Security')
+begin
+   insert into dbo.RolePermissions (RoleId, PermissionKey) select @RoleId, 'Administration:Security' ;
+end
+
+go
 
 

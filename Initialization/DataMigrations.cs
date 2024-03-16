@@ -4,6 +4,10 @@ using FluentMigrator.Runner.Initialization;
 using FluentMigrator.Runner.Processors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client.NativeInterop;
+using Org.BouncyCastle.Tls;
+using Serenity.Services;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.IO;
 
@@ -103,6 +107,8 @@ public class DataMigrations : IDataMigrations
             using var scope = serviceProvider.CreateScope();
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             runner.MigrateUp();
+            // hack for winauth sample:
+            RunWindowsUserCode();
         }
         catch (Exception ex)
         {
@@ -113,5 +119,35 @@ public class DataMigrations : IDataMigrations
             if (isFirebird)
                 Thread.CurrentThread.CurrentCulture = culture;
         }
+    }
+
+    private static void RunWindowsUserCode()
+    {
+        string sqlFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WindowsUserSetupBehavior.sql");
+
+        if (!File.Exists(sqlFile))
+            throw new FileNotFoundException("Can't find " + sqlFile + ". You will get an error on startup.  Please find this file in your source code and run manually against the DB.");
+     
+        using System.Diagnostics.Process process = new();
+        process.StartInfo.FileName = "sqlcmd";
+
+        process.StartInfo.Arguments = " -S (localdb)\\MsSqlLocalDB -d WinAuthSample_Default -E -i \"" + sqlFile + "\"";
+        process.EnableRaisingEvents = true;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.UseShellExecute = false;
+        process.Start();
+      
+        do
+        {
+            if (!process.HasExited)
+            {
+                process.Refresh();
+            }
+        }
+        while (!process.WaitForExit(1000)); //  the arg is based on milliseconds
+        
+
     }
 }

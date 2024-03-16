@@ -143,7 +143,7 @@ public partial class Startup
             loggingBuilder.AddDebug();
         });
 
-       // services.AddSingleton<IDataMigrations, AppServices.DataMigrations>();
+        services.AddSingleton<IDataMigrations, AppServices.DataMigrations>();
         services.AddSingleton<IElevationHandler, DefaultElevationHandler>();
         services.AddSingleton<IEmailSender, EmailSender>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -163,10 +163,12 @@ public partial class Startup
         services.AddUploadStorage();
         services.AddReporting();
 
-        //winauth addition
+        //winauth addition - possibly not needed.
+
         services.AddSingleton<IUserAccessor>(services =>
-    new ImpersonatingUserAccessor(
+          new ImpersonatingUserAccessor(
         ActivatorUtilities.CreateInstance<AppServices.UserAccessor>(services), services.GetRequiredService<IHttpContextItemsAccessor>()));
+
     }
 
 
@@ -227,7 +229,8 @@ public partial class Startup
             endpoints.MapControllers();
         });
 
-       // app.ApplicationServices.GetRequiredService<IDataMigrations>().Initialize();
+       app.ApplicationServices.GetRequiredService<IDataMigrations>().Initialize();
+
     }
 
     public static Action<IApplicationBuilder> ConfigureTestPipeline { get; set; }

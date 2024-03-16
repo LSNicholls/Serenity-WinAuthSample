@@ -64,6 +64,9 @@
         <p>To fully-work out these possibilities, the sample app makes some additional changes
             implementating some niceties you'll want to consider if you are including Windows authentication in your app.
         </p>
+        <p>The sample application should build and run from Visual Studio exactly as is, showing the Win Auth features, assuming sqlcmd is in your path, <b>except</b> that you should change WinAuthSettings:DomainConnected setting to true if your development computer is joined to a domain.  If sqlcmd is not in your path, you'll get an error the first time you run but the DB will be created according to standard Serenity system requirements.
+            You can run the file <span class="filename">WindowsUserSetupBehavior.sql</span> manually against your new DB, after that.
+        </p>
 
         <h2>Please note:</h2>
 
@@ -72,7 +75,7 @@
         <p class="NB">Please especially note that you, as an expert Serenity developer, may have better ways to write much of the code here.  I hope you let me know!  Besides, Serenity is always improving, so details of implementation are likely to change. But I think that the general method and ideas about the requirements to be met for a Windows Authentication  environment, however imperfectly implemented here, will remain valid.</p>
 
         <h2>Steps</h2>
-        This list should be a complete log of what I did on the sample project (possibly still a WIP).
+        This list should be a complete log of what I did on the sample project (possibly still a WIP), for your adaptation for your own projects.
 
         <ol>
             <li>
@@ -82,12 +85,13 @@
                 In the appsettings.json file, adjust the <span class="filename">WinAuthSettings:DomainConnected</span> key value to suit your needs.  This might be false in your development environment and would typically be true in production.  The method works in both environments, but slightly differently. 
             </li>
             <li>
-                Run <span class="filename">WindowsUserSetupBehavior.sql</span> in your Serenity system aka Default database, after adjusting the topmost section for any custom fields you want in the User row. In the example sql and additional code artifacts, this is FormInitials.
+                Run <span class="filename">WindowsUserSetupBehavior.sql</span>, or some variant of it, in your Serenity system aka Default database, after adjusting the topmost section for any custom fields you want in the User row. In the example sql and additional code artifacts, this is FormInitials.
                 <div class="NB"> If you are not using FormInitials, you will need to remove some related code in the p_SetupWindowsNetworkUser method. This code and related code throughout the sample exist to show you places you might adjust for custom User attributes in your application(s). The method also has comments about adjustments to the method parameters you might make in your version. You will also notice a stub method it calls, p_SetupAppSpecializedWindowsUserBehavior, which is blank in the sample, but able to accommodate per-application needs. For example, a user in a certain role might need some other business rules applied. You could also move code handling customized User row attributes here if they aren't standard across applications.</div>
             </li>
-            <li>In <span class="filename">Startup.cs</span>, you'll need a new service for ImpersonatingUserAccessor.  You'll find it at the end of the ConfigureServices method. <br />
-                This is the only definitely-required change in the file, but there are a bunch of additional adjustments suggested in <span class="filename">Startup.cs</span> (search for "winauth" in the comments). Some combination of these changes may work to avoid the error <code>The provided antiforgery token was meant for a different claims-based user than the current user.</code> These were all suggested by various people when using multiple authentication schemes, to avoid this error as well as to make multiple authentication schemes work when one was Windows -- none of them worked terribly well for me. In the end I found ways to handle all the other problems outside Startup.cs but I did comment out <code>options.Filters.Add(typeof(AutoValidateAntiforgeryIgnoreBearerAttribute));</code> leaving only  <code>options.Filters.Add(typeof(AntiforgeryCookieResultFilterAttribute));</code> in the version shown in this sample. You may find you don't need to do this, but it seems like a safe thing to do on an intranet app that cannot be accessed from rogue apps in the external world anyway.
-                 <br/>In <span class="filename">Startup.cs</span>, I've also removed the Migrations service and its initialization lines; in your version of the file, if your database strategy calls for it, feel free to include these lines or as I do remove them after creating the default database the first time I run a new project from a Serenity template.  The <span class="filename">WindowsUserSetupBehavior.sql</span> file included in this project include all the post-Serenity-initialization database code you'll need for the sample.</li>
+            <li>In <span class="filename">Startup.cs</span>, you'll see a new service for ImpersonatingUserAccessor.  You'll find it at the end of the ConfigureServices method. <br />
+                It may actually not be needed at all, it's for some added functionality I'm still investigating. There are a bunch of additional adjustments suggested in <span class="filename">Startup.cs</span> (search for "winauth" in the comments). Some combination of these changes may work to avoid the error <code>The provided antiforgery token was meant for a different claims-based user than the current user.</code> These were all suggested by various people when using multiple authentication schemes, to avoid this error as well as to make multiple authentication schemes work when one was Windows -- none of them worked terribly well for me. In the end I found ways to handle all the other problems outside Startup.cs but I did comment out <code>options.Filters.Add(typeof(AutoValidateAntiforgeryIgnoreBearerAttribute));</code> leaving only  <code>options.Filters.Add(typeof(AntiforgeryCookieResultFilterAttribute));</code> in the version shown in this sample. You may find you don't need to do this, but it seems like a safe thing to do on an intranet app that cannot be accessed from rogue apps in the external world anyway.
+                <br /><br /><span class="filename">Startup.cs</span> also runs Migrations.  In the sample's <span class="filename">DataMigrations.cs</span>, I've hacked the code to run the <span class="filename">WindowsUserSetupBehavior.sql</span> file to set up the required sql artifacts.  Obviously, in your projects you won't be changing <span class="filename">DataMigrations.cs</span>; how you apply sql code changes is up to you. (I generally remove the two lines related to Migrations after creating the default database the first time I run a new project from a Serenity template, and use straight SQL for database adjustments thereafter.)
+            </li>
             <li>
                 Adjust <span class="filename">UserRetrieveService.cs:</span>
                 <ol>
