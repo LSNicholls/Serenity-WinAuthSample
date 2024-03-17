@@ -22,6 +22,10 @@ To fully-work out these possibilities, the sample app makes some additional chan
 
 The sample app should build and run exactly as-is within Visual Studio, showing the WinAuth features, assuming sqlcmd is in your path.  If sqlcmd is *not* in your path, you'll get an error the first time but the DB will still be created.  You can then run [the required sql file](./WindowsUserSetupBehavior.sql) manually against the DB to set up the additional SQL artifacts for this sample app.
 
+Either way, please note that if the database is created and most additional artifacts from the SQL file are created, but you get an error that "p_SetupWindowsNetworkUser" does not exist, your instance of (localdb)\MsSqlLocalDB needs to be upgraded.  Refer to <a href="https://intellitect.com/blog/upgrading-sql-server-localdb/" target="_blank">this article</a>, for very good instructions on how to do that.
+
+If you do not use the IIS Express launch configuration, the app will still run, but you will not see the WinAuth features properly because Windows Authentication will not be available.
+
 The full contents of the implementation instructions, for your own apps, have been moved to a [content file in the project](./Modules/Doc/DocPage.cshtml), so it can be displayed within the sample application.
 
 To access the full page of instructions, run the app and use the "i" button on the top bar (it has the tooltip "Windows Authentication steps/instructions", just to the left of the "switch language" icon.
