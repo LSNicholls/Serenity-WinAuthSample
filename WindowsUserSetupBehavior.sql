@@ -8,6 +8,7 @@ begin
    alter table dbo.Users add FormInitials nvarchar(4) ;
 
 end
+GO
 
 SET ANSI_NULLS ON
 GO
