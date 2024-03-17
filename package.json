@@ -2,7 +2,7 @@
   "name": "winauthsample.web",
   "dependencies": {
     "@serenity-is/corelib": "6.9.6",
-    "@serenity-is/extensions": "file:./node_modules/.dotnet/Serenity.Extensions",
+    "@serenity-is/extensions": "./node_modules/.dotnet/serenity.extensions",
     "@serenity-is/sleekgrid": "1.6.3",
     "@types/jquery": "2.0.48",
     "@types/jquery.validation": "1.16.7",
