@@ -1,10 +1,4 @@
-﻿import { ServiceOptions, serviceRequest } from "@serenity-is/corelib";
-import { ListRequest } from "../Services/ListRequest";
-import { ListResponse } from "../Services/ListResponse";
-import { RetrieveRequest } from "../Services/RetrieveRequest";
-import { RetrieveResponse } from "../Services/RetrieveResponse";
-import { SaveRequest } from "../Services/SaveRequest";
-import { SaveResponse } from "../Services/SaveResponse";
+﻿import { SaveRequest, SaveResponse, ServiceOptions, RetrieveRequest, RetrieveResponse, ListRequest, ListResponse, serviceRequest } from "@serenity-is/corelib";
 import { MyProfileRow } from "./MyProfileRow";
 
 export namespace MyProfileService {

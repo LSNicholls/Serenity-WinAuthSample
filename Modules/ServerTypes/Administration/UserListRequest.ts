@@ -1,4 +1,4 @@
-﻿import { ListRequest } from "../Services/ListRequest";
+﻿import { ListRequest } from "@serenity-is/corelib";
 
 export interface UserListRequest extends ListRequest {
 }

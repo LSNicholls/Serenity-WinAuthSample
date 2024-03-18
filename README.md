@@ -14,7 +14,10 @@ To fully-work out these possibilities, the sample app makes some additional chan
 ## Please note: ##
 ###### These instructions have only been tested in Serenity 8 + under AspNetCore v8. The WindowsGroup-related functionality will work in earlier versions, but some of the code related to System.Security and WindowsIdentity probably will not. The sample code may contain Newtonsoft.Json references, as it was started before [Transitioning to System.Text.Json from Newtonsoft.Json in 8.0.1](https://github.com/serenity-is/Serenity/issues/7021), and the contributed WindowsGroup, WindowsGroupRoles, and MyProfile modules may contain even older syntax, since they were developed in Serenity 6.  But nothing in them prevents them from being used or revised in 8.0.1 and later versions.  
 
+
 ###### It should also work in both Free and Premium versions of Serenity; the method was originally developed under Premium (StartSharp) but this sample is built from Serenity and has the same functionality.
+
+##### When the free Serene template for Asp.Net Core v8 is released, I will make a new version of this sample available with all custom code built from the ground up on 8.3.5, so it will be somwhat cleaner. 
 
 ###### Please especially note that you, as an expert Serenity developer, may have better ways to write much of the code here. I hope you let me know! Besides, Serenity is always improving, so details of implementation are likely to change. But I think that the general method and ideas about the requirements to be met for a Windows Authentication environment, however imperfectly implemented here, will remain valid.
 
