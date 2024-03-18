@@ -1,4 +1,6 @@
-﻿import { ListResponse, ServiceOptions, SaveResponse, serviceRequest } from "@serenity-is/corelib";
+﻿import { ServiceOptions, serviceRequest } from "@serenity-is/corelib";
+import { ListResponse } from "../Services/ListResponse";
+import { SaveResponse } from "../Services/SaveResponse";
 import { TranslationItem } from "./TranslationItem";
 import { TranslationListRequest } from "./TranslationListRequest";
 import { TranslationUpdateRequest } from "./TranslationUpdateRequest";

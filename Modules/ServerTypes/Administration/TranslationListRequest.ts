@@ -1,4 +1,4 @@
-﻿import { ListRequest } from "@serenity-is/corelib";
+﻿import { ListRequest } from "../Services/ListRequest";
 
 export interface TranslationListRequest extends ListRequest {
     SourceLanguageID?: string;

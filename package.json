@@ -1,17 +1,17 @@
 {
   "name": "winauthsample.web",
   "dependencies": {
-    "@serenity-is/corelib": "6.9.6",
+    "@serenity-is/corelib": "8.3.7",
     "@serenity-is/extensions": "./node_modules/.dotnet/serenity.extensions",
-    "@serenity-is/sleekgrid": "1.6.3",
-    "@types/jquery": "2.0.48",
-    "@types/jquery.validation": "1.16.7",
-    "@types/jqueryui": "1.12.6",
+    "@serenity-is/sleekgrid": "1.7.0",
+    "@types/jquery": "3.5.29",
+    "@types/jquery.validation": "1.16.10",
+    "@types/jqueryui": "1.12.21",
     "jsx-dom": "8.0.7",
     "preact": "10.15.0"
   },
   "devDependencies": {
-    "@serenity-is/tsbuild": "6.9.10"
+    "@serenity-is/tsbuild": "8.0.1"
   },
   "scripts": {
     "build": "npm run tsbuild",

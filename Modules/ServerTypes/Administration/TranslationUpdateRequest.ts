@@ -1,4 +1,4 @@
-﻿import { ServiceRequest } from "@serenity-is/corelib";
+﻿import { ServiceRequest } from "../Services/ServiceRequest";
 
 export interface TranslationUpdateRequest extends ServiceRequest {
     TargetLanguageID?: string;

@@ -1,4 +1,5 @@
-﻿import { SaveResponse, ServiceOptions, serviceRequest } from "@serenity-is/corelib";
+﻿import { ServiceOptions, serviceRequest } from "@serenity-is/corelib";
+import { SaveResponse } from "../Services/SaveResponse";
 import { UserRoleListRequest } from "./UserRoleListRequest";
 import { UserRoleListResponse } from "./UserRoleListResponse";
 import { UserRoleUpdateRequest } from "./UserRoleUpdateRequest";

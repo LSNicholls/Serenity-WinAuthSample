@@ -1,4 +1,4 @@
-﻿import { ServiceRequest } from "@serenity-is/corelib";
+﻿import { ServiceRequest } from "../Services/ServiceRequest";
 import { UserPermissionRow } from "./UserPermissionRow";
 
 export interface UserPermissionUpdateRequest extends ServiceRequest {
