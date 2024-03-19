@@ -27,8 +27,8 @@ namespace WinAuthSample.AppServices
                 
                 if (UserName.Contains('\\') )
                 {
-                    // we can only do this part for the current user.
-                    if (RefreshRoles && UserId.HasValue && UserId.ToString() == Context.User.GetIdentifier())
+                    
+                    if (RefreshRoles && UserId.HasValue)
                     {
                         UserRetrieveService.RefreshCurrentUserRolesByNetworkGroup(UserName, conn, false, (WindowsIdentity) Context.User.Identity);
                     }

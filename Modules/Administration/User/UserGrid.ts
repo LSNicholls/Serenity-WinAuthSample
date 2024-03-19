@@ -98,8 +98,8 @@ export class UserGrid extends EntityGrid<UserRow, any> {
     protected refreshUserData(userId, userName) {
 
         if (userName.indexOf("\\") > 1) {
-            var msg = "The user's cached site details have been removed. Unless this user is yourself, the user's roles have also been re-queried from Windows.";
-            var msg2 = "\n\nUnless this user is yourself, and if this user had other roles manually assigned, the additional roles will have been removed and you may need to re-assign some.";
+            var msg = "The user's cached site details have been removed. The user's roles have also been re-queried from Windows.";
+            var msg2 = "\n\nIf this user had other roles manually assigned, the additional roles will have been removed and you may need to re-assign some.";
             var msg3 = "\n\nThe user may need to request a refresh via their Profile page, or log out and back in, to see an updated Dashboard in some cases.";
 
 
