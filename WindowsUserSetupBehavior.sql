@@ -120,7 +120,7 @@ begin
        on wgr.RoleId = r.RoleId ;
 
        insert into UserRoles (UserId, RoleId)
-       select @UserId, source.RoleId
+       select distinct @UserId, source.RoleId
        from #GroupsForUser source
        left join UserRoles target
        on source.RoleId = target.RoleId
