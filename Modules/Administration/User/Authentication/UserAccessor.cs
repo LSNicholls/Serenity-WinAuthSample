@@ -37,8 +37,9 @@ public class UserAccessor(IHttpContextAccessor httpContextAccessor, [FromService
             }
 
             string id = u.UserId.ToString();
-            ident.AddClaim(new Claim(ClaimTypes.NameIdentifier, id));  
-           
+            ident.AddClaim(new Claim(ClaimTypes.NameIdentifier, id));
+            _ = user.Claims.Append(new Claim(ClaimTypes.NameIdentifier, id));
+
         }
         return user;
     }
