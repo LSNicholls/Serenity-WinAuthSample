@@ -168,7 +168,11 @@ ViewData["PageId"] = "Dashboard";
     </div>
 
     <div class="row">
-        <section class="col-lg-7">
+        <!-- Commenting out this demo code, but leaving it in place to note that the relevant SCRIPT
+            has been included only in the User.IsActive branch.  No sense in including it when it won't be used.
+        -->
+        @*
+       <section class="col-lg-7">
             <div class="card s-dashboard-card">
                 <div class="card-body">
                     <ul class="nav nav-tabs" role="tablist">
@@ -213,7 +217,7 @@ ViewData["PageId"] = "Dashboard";
             </div>
         </section>
 
-        <section class="col-lg-5">
+       <section class="col-lg-5">
             <div class="card s-dashboard-card bg-world-map">
                 <div class="card-header d-flex">
                     <h3 class="card-title text-white">
@@ -286,9 +290,10 @@ ViewData["PageId"] = "Dashboard";
                 </div>
             </div>
         </section>
+        *@
     </div>
 
-    <script>
+ @*    <script>
 
         $(function () {
 
@@ -504,7 +509,7 @@ ViewData["PageId"] = "Dashboard";
         salesByTypeChart.update();
         });
         });
-    </script>
+    </script> *@
 }
 else
 {
