@@ -50,7 +50,20 @@ export class UserDialog extends EntityDialog<UserRow, any> {
                 }).dialogOpen();
             }
         });
-        //winauth addition:
+    
+
+        //winauth additions:
+        buttons.splice(2, 0, {
+            title: "",
+            hint: "Refresh",
+            icon: 'fa fa-refresh text-blue',
+            cssClass: 'refresh-user-dialog',
+            separator: false,
+            onClick: () => {
+                this.reloadById();
+            }
+        });
+
         buttons.push({
             title: localText('Refresh User Data'),
             icon: 'fa-recycle text-green',
@@ -58,6 +71,7 @@ export class UserDialog extends EntityDialog<UserRow, any> {
             separator: true,
             onClick: () => {
                 this.refreshUserData();
+                
             }
         });
         return buttons;
@@ -97,7 +111,7 @@ export class UserDialog extends EntityDialog<UserRow, any> {
     protected refreshUserData() {
 
         if (this.entity.Username.indexOf("\\") > 1) {
-            var msg = "The user's cached site details have been removed. The user's roles have also been re-queried from Windows.";
+            var msg = "The user's cached site details have been removed. The user's roles have also been re-queried from Windows (you may not see the results until you refresh this screen).";
             var msg2 = "\n\nIf this user had other roles manually assigned, the additional roles will have been removed and you may need to re-assign some.";
             var msg3 = "\n\nThe user may need to request a refresh via their Profile page, or log out and back in, to see an updated Dashboard in some cases.";
 
@@ -108,6 +122,7 @@ export class UserDialog extends EntityDialog<UserRow, any> {
                 AdminRefreshUser(this.entityId, this.entity.Username, msg + msg3, false), {
                 onNo: () => AdminRefreshUser(this.entityId, this.entity.Username, msg + msg2 + msg3, true)
             })
+            
         }
         else {
             var msg = "The user's cached site details have been removed.";
