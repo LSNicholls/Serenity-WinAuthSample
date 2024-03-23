@@ -122,7 +122,7 @@ public class UserRetrieveService(ITwoLevelCache cache, ISqlConnections sqlConnec
         bool retval = true;
         RemoveCachedUser(cache, userId, username);
 
-        if (username.Contains('\\') && (!username.Equals(adminUser.User.Identity.Name, StringComparison.InvariantCultureIgnoreCase)))
+        if (username.Contains('\\') )
         {
            
             var parts = username.Split('\\');
