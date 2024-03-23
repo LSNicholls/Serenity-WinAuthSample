@@ -1,15 +1,15 @@
-import {resolveUrl, alertDialog, information } from "@serenity-is/corelib";
+import {resolveUrl, alertDialog, informationDialog } from "@serenity-is/corelib";
 export function RemoveCurrentUserCache(UserId: number, UserName: string, Msg: string, RefreshRoles: boolean) {
     var retval = GetAjaxResult("~/User/Auth/RemoveUserCache", { 'UserId': UserId, 'UserName': UserName, 'RefreshRoles':RefreshRoles });
     if (Msg.length > 0) {
-        information(Msg, null);
+        informationDialog(Msg, null);
     }
     return retval;
 }
 export function AdminRefreshUser(UserId: number, UserName: string, Msg: string, RemoveOtherRoles:boolean) {
     var retval = GetAjaxResult("~/User/Auth/AdminRefreshUser", { 'UserId': UserId, 'UserName': UserName,'RemoveOtherRoles': RemoveOtherRoles});
     if (Msg.length > 0) {
-        information(Msg, null);
+        informationDialog(Msg, null);
     }
     if (!(retval == "ok") ) {
         alertDialog(retval);
